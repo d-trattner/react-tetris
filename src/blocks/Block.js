@@ -48,6 +48,7 @@ export default class Block extends Component {
       x: this.state.gridPos.x * this.props.cellSize * this.props.sizeMultiplier,
       y: this.state.gridPos.y * this.props.cellSize * this.props.sizeMultiplier
     };
+
   }
 
   componentDidMount() {
@@ -64,10 +65,6 @@ export default class Block extends Component {
     }
 
     window.removeEventListener("keydown", this.onKeyDown.bind(this));
-  }
-
-  increaseSpeed() {
-
   }
 
   // calculate width, scanning the whole matrix

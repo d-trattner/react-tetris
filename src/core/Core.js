@@ -10,7 +10,10 @@ import { BagOfBlocks } from "../blocks/BlockTypes"
 
 import Bg from "./Bg"
 
-import { Colors } from './Colors';
+import { Colors } from './Colors'
+
+import { Swipeable } from 'react-swipeable'
+import Tappable from 'react-tappable';
 
 export default class Core extends Component {
 
@@ -27,6 +30,14 @@ export default class Core extends Component {
   startSpeed = 1000;
   startTime = null;
   currentTime = null;
+
+  swipeConfig = {
+    delta: 10,                             // min distance(px) before a swipe starts
+    preventDefaultTouchmoveEvent: false,   // preventDefault on touchmove, *See Details*
+    trackTouch: true,                      // track touch input
+    trackMouse: true,                     // track mouse input
+    rotationAngle: 0,                      // set a rotation angle
+  }
 
   constructor(props) {
     super(props);
@@ -57,6 +68,34 @@ export default class Core extends Component {
         };
       }
     }
+
+    this.blockRef = React.createRef();
+
+  }
+
+  swipeLeftHandler(eventData) {
+    console.log("swipeLeftHandler")
+    if(this.state.running && this.blockRef.current) this.blockRef.current.moveLeft();
+  }
+
+  swipeRightHandler(eventData) {
+    console.log("swipeRightHandler")
+    if(this.state.running && this.blockRef.current) this.blockRef.current.moveRight();
+  }
+
+  swipeDownHandler(eventData) {
+    console.log("swipeDownHandler")
+    if(this.state.running && this.blockRef.current) this.blockRef.current.moveDown();
+  }
+
+  swipeUpHandler(eventData) {
+    console.log("swipeUpHandler")
+    if(this.state.running && this.blockRef.current) this.blockRef.current.rotate();
+  }
+
+  tapHandler() {
+    console.log("tapHandler")
+    if(this.state.running && this.blockRef.current) this.blockRef.current.rotate();
   }
 
   gameStart() {
@@ -117,6 +156,7 @@ export default class Core extends Component {
       <Block
         id={this.state.blockCount}
         key={this.state.blockCount} // this is needed to reset the Block Element!!!
+        ref={this.blockRef}
         core={this}
         type={type}
         delay={this.state.speed}
@@ -125,6 +165,7 @@ export default class Core extends Component {
         gridWidth={this.state.gridWidth}
         gridHeight={this.state.gridHeight}
         onUpdateGrid={this.updateGrid.bind(this)}
+        touchEvent={this.state.touchEvent}
       />
     );
     this.setState({
@@ -286,64 +327,73 @@ export default class Core extends Component {
 
   render() {
     return (
-      <>
-        <Bg/>
-
-        <div
-          className="rootContainer"
-          style={{
-            position: "relative",
-            margin: "0 auto",
-            width:
-              this.state.sizeMultiplier *
-                this.state.cellSize *
-                this.state.gridWidth +
-              "px",
-            height:
-              this.state.sizeMultiplier *
-                this.state.cellSize *
-                this.state.gridHeight +
-              50 +
-              "px",
-            animation: this.state.animation
-          }}
+      <Tappable onTap={this.tapHandler.bind(this)}>
+        <Swipeable 
+          onSwipedLeft={this.swipeLeftHandler.bind(this)}
+          onSwipedRight={this.swipeRightHandler.bind(this)}
+          onSwipedDown={this.swipeDownHandler.bind(this)}
+          onSwipedUp={this.swipeUpHandler.bind(this)}
+          {...this.swipeConfig}
         >
-          {this.state.start ? (
-            <Start
-              onStartClick={() => {
-                this.gameStart();
-              }}
-            />
-          ) : (
-            ""
-          )}
+          <Bg/>
 
-          {!this.state.start && !this.state.running ? (
-            <Replay
+          <div
+            className="rootContainer"
+            style={{
+              position: "relative",
+              margin: "0 auto",
+              width:
+                this.state.sizeMultiplier *
+                  this.state.cellSize *
+                  this.state.gridWidth +
+                "px",
+              height:
+                this.state.sizeMultiplier *
+                  this.state.cellSize *
+                  this.state.gridHeight +
+                50 +
+                "px",
+              animation: this.state.animation
+            }}
+            { ...this.swipeHandlers }
+          >
+            {this.state.start ? (
+              <Start
+                onStartClick={() => {
+                  this.gameStart();
+                }}
+              />
+            ) : (
+              ""
+            )}
+
+            {!this.state.start && !this.state.running ? (
+              <Replay
+                points={this.state.points}
+                level={this.state.level}
+                onStartClick={() => {
+                  this.gameStart();
+                }}
+              />
+            ) : (
+              ""
+            )}
+
+            <Info points={this.state.points} level={this.state.level} nextBlockType={this.state.nextBlockType} />
+
+            <Grid
+              sizeMultiplier={this.state.sizeMultiplier}
+              cellSize={this.state.cellSize}
+              gridWidth={this.state.gridWidth}
+              gridHeight={this.state.gridHeight}
+              block={this.state.block}
+              blockCount={this.state.blockCount}
+              grid={this.state.grid}
               points={this.state.points}
-              level={this.state.level}
-              onStartClick={() => {
-                this.gameStart();
-              }}
             />
-          ) : (
-            ""
-          )}
-
-          <Info points={this.state.points} level={this.state.level} nextBlockType={this.state.nextBlockType} />
-
-          <Grid
-            sizeMultiplier={this.state.sizeMultiplier}
-            cellSize={this.state.cellSize}
-            gridWidth={this.state.gridWidth}
-            gridHeight={this.state.gridHeight}
-            block={this.state.block}
-            blockCount={this.state.blockCount}
-            grid={this.state.grid}
-            points={this.state.points}
-          />
-        </div>
-      </>
+          </div>
+        </Swipeable>
+      </Tappable>
     );
   }
 }
