@@ -33,9 +33,9 @@ export default class Core extends Component {
 
   swipeConfig = {
     delta: 10,                             // min distance(px) before a swipe starts
-    preventDefaultTouchmoveEvent: false,   // preventDefault on touchmove, *See Details*
+    preventDefaultTouchmoveEvent: true,   // preventDefault on touchmove, *See Details*
     trackTouch: true,                      // track touch input
-    trackMouse: true,                     // track mouse input
+    trackMouse: false,                     // track mouse input
     rotationAngle: 0,                      // set a rotation angle
   }
 
@@ -57,6 +57,7 @@ export default class Core extends Component {
       grid: [],
       points: 0,
       nextBlockType: null,
+      log: []
     };
 
     for (let i = 0; i < this.state.gridHeight; i++) {
@@ -73,29 +74,39 @@ export default class Core extends Component {
 
   }
 
+  log(msg) {
+    // let l = this.state.log.slice(0);
+    // l.push(msg);
+    // this.setState({log:l});
+  }
+
   swipeLeftHandler(eventData) {
-    console.log("swipeLeftHandler")
+    this.log("swipeLeftHandler")
     if(this.state.running && this.blockRef.current) this.blockRef.current.moveLeft();
   }
 
   swipeRightHandler(eventData) {
-    console.log("swipeRightHandler")
+    this.log("swipeRightHandler")
     if(this.state.running && this.blockRef.current) this.blockRef.current.moveRight();
   }
 
   swipeDownHandler(eventData) {
-    console.log("swipeDownHandler")
+    this.log("swipeDownHandler")
     if(this.state.running && this.blockRef.current) this.blockRef.current.moveDown();
   }
 
   swipeUpHandler(eventData) {
-    console.log("swipeUpHandler")
+    this.log("swipeUpHandler")
     if(this.state.running && this.blockRef.current) this.blockRef.current.rotate();
   }
 
   tapHandler() {
-    console.log("tapHandler")
-    if(this.state.running && this.blockRef.current) this.blockRef.current.rotate();
+    this.log("tapHandler")
+    if(this.state.running && this.blockRef.current){
+      this.blockRef.current.rotate();
+    } else {
+      this.gameStart();
+    }
   }
 
   gameStart() {
@@ -391,6 +402,20 @@ export default class Core extends Component {
               grid={this.state.grid}
               points={this.state.points}
             />
+            <div style={{
+              position: 'absolute',
+              width: this.state.gridWidth * this.state.cellSize * this.state.sizeMultiplier + "px",
+              //height: this.state.sizeMultiplier * this.state.cellSize * this.state.gridHeight + 'px',
+              backgroundColor: Colors.Dark,
+              color: Colors.Light,
+              fontSize: '12px',
+            }}>
+              {this.state.log.map((item, index) => {
+                return (
+                  <div key={index}>{item}</div>
+                );
+              })}
+            </div>
           </div>
         </Swipeable>
       </Tappable>
